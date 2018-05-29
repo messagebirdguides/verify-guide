@@ -14,7 +14,7 @@ We will walk you through the following steps:
 - Verifying the code
 
 
-You can follow along this tutorial to build the whole application from scratch or, if you want to see it in action right away, you can also [download, clone or fork the sample repository from GitHub](https://github.com/).
+You can follow along this tutorial to build the whole application from scratch or, if you want to see it in action right away, you can also [download, clone or fork the sample repository from GitHub](https://github.com/messagebirdguides/verify-guide).
 
 ## Getting started
 
@@ -259,7 +259,7 @@ You now have a running integration of MessageBird's Verify API!
 
 You can now leverage the flow, code snippets and UI examples from this tutorial to build the verification into a real application's register and login process to enable 2FA for it.
 
-Running into issues? Explore [the complete code on GitHub](https://github.com/) to see whether you might have missed something.
+Running into issues? Explore [the complete code on GitHub](https://github.com/messagebirdguides/verify-guide) to see whether you might have missed something.
 
 ## Next steps
 
