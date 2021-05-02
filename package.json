@@ -1,6 +1,7 @@
 {
   "name": "node-messagebird-verify-example",
   "main": "index.js",
+  "start": "node index.js",
   "dependencies": {
     "body-parser": "^1.18.3",
     "dotenv": "^5.0.1",
