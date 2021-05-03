@@ -1,6 +1,6 @@
 // Load Dependencies
 var express = require('express');
-var exphbs  = require('express-handlebars');
+var exphbs = require('express-handlebars');
 var bodyParser = require('body-parser');
 
 // Load configuration from .env file
@@ -11,60 +11,80 @@ var messagebird = require('messagebird')(process.env.MESSAGEBIRD_API_KEY);
 
 // Set up and configure the Express framework
 var app = express();
-app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+// bring in helpers
+const { createAccessToken } = require('./helpers/createAccessToken');
+const { performSimCheck } = require('./helpers/performSimCheck');
+
+app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
-app.use(bodyParser.urlencoded({ extended : true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Display page to ask the user for their phone number
-app.get('/', function(req, res) {
-    res.render('step1');
+app.get('/', function (req, res) {
+  res.render('step1');
 });
 
 // Handle phone number submission
-app.post('/step2', function(req, res) {
-    var number = req.body.number;
-    
-    // Make request to Verify API
-    messagebird.verify.create(number, {
-        originator : 'Code',
-        template : 'Your verification code is %token.'
-    }, function (err, response) {
-        if (err) {
-            // Request has failed
-            console.log(err);
-            res.render('step1', {
-                error : err.errors[0].description
-            });
-        } else {
-            // Request was successful
-            console.log(response);
-            res.render('step2', {
-                id : response.id
-            });
-        }
-    })    
+app.post('/step2', function (req, res) {
+  var number = req.body.number;
+      // Start the verification process
+  verifyRequestNumber = req.body.number;
+  //create access token
+  const accessToken = await createAccessToken();
+  // perform SIMCheck
+  const no_sim_change = await performSimCheck(
+    verifyRequestNumber,
+    accessToken
+  );
+  if(!no_sim_change){
+      return res.render('sim-changed')
+      
+  }
+  // Make request to Verify API
+  messagebird.verify.create(
+    number,
+    {
+      originator: 'Code',
+      template: 'Your verification code is %token.',
+    },
+    function (err, response) {
+      if (err) {
+        // Request has failed
+        console.log(err);
+        res.render('step1', {
+          error: err.errors[0].description,
+        });
+      } else {
+        // Request was successful
+        console.log(response);
+        res.render('step2', {
+          id: response.id,
+        });
+      }
+    }
+  );
 });
 
 // Verify whether the token is correct
-app.post('/step3', function(req, res) {
-    var id = req.body.id;
-    var token = req.body.token;
+app.post('/step3', function (req, res) {
+  var id = req.body.id;
+  var token = req.body.token;
 
-    // Make request to Verify API
-    messagebird.verify.verify(id, token, function(err, response) {
-        if (err) {
-            // Verification has failed
-            console.log(err);
-            res.render('step2', {
-                error: err.errors[0].description,
-                id : id
-            });
-        } else {
-            // Verification was successful
-            console.log(response);
-            res.render('step3');
-        }
-    })    
+  // Make request to Verify API
+  messagebird.verify.verify(id, token, function (err, response) {
+    if (err) {
+      // Verification has failed
+      console.log(err);
+      res.render('step2', {
+        error: err.errors[0].description,
+        id: id,
+      });
+    } else {
+      // Verification was successful
+      console.log(response);
+      res.render('step3');
+    }
+  });
 });
 
 // Start the application
